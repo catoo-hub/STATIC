@@ -1,0 +1,43 @@
+{
+    "app_title": "Application",
+    "app_custom_id": "test_custom:id",
+    "button_name": "APPLY NOW",
+    "embed_name": "Static Applications",
+    "embed_colour": "43,45,49",
+    "embed_description": "**Application Rules**\n\n**1.** Edit must be at least 10 seconds not including loops.\n**2.** Please do not app with something from 2 months ago or more.\n**3.** Collabs, remakes are not allowed.\n**4.** One apps per day.\n\n\nThe static members will give you the following Results and the Owner will give you the official or final result of your edit below.\n\n**Accept** - It means that you are accepted and become a member in STATIC.\n\n**Trial** - This means that in the trial version you are given a maximum of a month so that you can get out of the trial version.\n\n**Reapp** - Re-apply with better work.\n\n**Decline** - This means that after a while you can add a new edit and try again",
+    "submit_channel_id": 848477659049492481,
+    "questions": [
+        {
+            "question": "Link to your socials.",
+            "placeholder": "ex. Instagram",
+            "required": true,
+            "style": "input",
+            "input_style": "short",
+            "custom_id": "test_id_2"
+        },
+        {
+            "question": "Link to your edit.",
+            "placeholder": "Instagram, GoogleDrive, Mega",
+            "required": true,
+            "style": "input",
+            "input_style": "short",
+            "custom_id": "custom_id_short"
+        },
+        {
+            "question": "Why do you want to join Static Squad?",
+            "placeholder": "ex. Meet more people and expand my editing style and improve editing skills", 
+            "required": true,
+            "style": "input",
+            "input_style": "short",
+            "custom_id": "custom_id_short2"
+        },
+        {
+            "question": "How active are you? (1-5)",
+            "placeholder": "ex. 5", 
+            "required": true,
+            "style": "input",
+            "input_style": "short",
+            "custom_id": "custom_id_short3"
+        }
+    ]
+}
