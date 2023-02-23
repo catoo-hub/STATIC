@@ -58,7 +58,7 @@ class FormModal(nextcord.ui.Modal):
 		# Sending Form Embed
 		await interaction.response.send_message(submit_message, ephemeral = True)
 		submit_channel = await bot.fetch_channel(submit_channel_id)
-		await submit_channel.send("", embed=embed)
+		await submit_channel.send("<@&848441067888312340>", embed=embed)
 		
 # Form View Class
 class FormView(nextcord.ui.View):
