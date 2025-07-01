@@ -19,7 +19,8 @@ with open("./config/messages.json") as f:
 # Bot Config
 
 PREFIX = config["prefix"]
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.environ['TOKEN']
+WEBHOOK = os.environ['WEBHOOK']
 
 admin_role_id = config["admin_role_id"]
 

@@ -1,10 +1,8 @@
 {
-	"prefix" : "%",
-	"guild_ids" : [
-		823403116372033557
-	],
-	"questions_timeout" : 0,
-	"confirmation_timeout" : 0,
+  "prefix": "%",
+  "guild_ids": [823403116372033557],
+  "questions_timeout": 0,
+  "confirmation_timeout": 0,
 
-	"admin_role_id" : 1073937635145429123
+  "admin_role_id": 1383172546417000468
 }

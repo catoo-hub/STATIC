@@ -1,5 +1,5 @@
 {
-	"question_not_answered_message" : "Question not answered.",
+	"question_not_answered_message" : "I answered other question",
 
 	"configuration_started_message" : "Configuration started. Please answer the questions!",
 	"configuration_timed_out_message" : "Timed out waiting for configuration. Please answer the questions within {} seconds.",
