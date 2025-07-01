@@ -418,16 +418,17 @@ class Bot(commands.Bot):
     
     # await self.instagram_posts.check_for_new_post()
     
-# Bot Instance
-bot = Bot(command_prefix=PREFIX,
-          intents=nextcord.Intents.all(),
-          help_command=None)
+if __name__ == "__main__":
+    # Bot Instance
+    bot = Bot(command_prefix=PREFIX,
+              intents=nextcord.Intents.all(),
+              help_command=None)
 
-# Load Modules
-for file in os.listdir("./modules"):
-  if file.endswith(".py"):
-    bot.load_extension(f"modules.{file[:-3]}")
-    print("Loaded module: " + file[:-3])
+    # Load Modules
+    for file in os.listdir("./modules"):
+      if file.endswith(".py"):
+        bot.load_extension(f"modules.{file[:-3]}")
+        print("Loaded module: " + file[:-3])
 
-# Run Bot
-bot.run(TOKEN)
+    # Run Bot
+    bot.run(TOKEN)
