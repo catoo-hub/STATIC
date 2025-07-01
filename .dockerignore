@@ -1,0 +1,33 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.env.*
+env/
+venv/
+ENV/
+.vscode/
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Session and temp files
+session/
+tmp/
+
+# Project specific
+poetry.lock
+pyproject.toml
+replit.nix
+replit_zip_error_log.txt
+README.md
+LICENSE
+package.json
+package-lock.json
