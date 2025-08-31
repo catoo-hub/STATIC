@@ -462,7 +462,7 @@ class FormModal(nextcord.ui.Modal):
         
         # Отправляем подтверждение пользователю
         await interaction.response.send_message(
-          f"✅ Ваша заявка отправлена!\n\n📝 **Публикация**: {thread.name}\n🔗 **Ссылка**: {thread.jump_url}", 
+          f"✅ Ваша заявка отправлена!\n\n📝 **Публикация**: {thread.name}\n🔗 **Ссылка**: {thread.mention}", 
           ephemeral=True
         )
         
