@@ -264,52 +264,7 @@ class Configuration(commands.Cog, name="Bot Configuration Command"):
     await ctx.reply(f"✅ Форма отправлена в форум {forum_channel.mention}!")
     await forum_channel.send(embed=embed, view=FormView(forum_channel))
   
-  # Quick Send Form to Configured Forum Command
-  @commands.command(name="sendformquick",
-                    description="Быстро отправить форму в настроенный форум")
-  @commands.has_permissions(administrator=True)
-  async def send_form_quick(self, ctx: commands.Context):
-    """Быстро отправляет форму в настроенный форум без указания канала"""
-    
-    try:
-      import json
-      import os
-      config_file = "./config/forum_config.json"
-      if not os.path.exists(config_file):
-        await ctx.send("❌ Конфигурация форума не найдена! Сначала настройте форум командой `!setupforum`")
-        return
-      
-      with open(config_file, 'r', encoding='utf-8') as f:
-        config = json.load(f)
-      
-      if not config.get("forum_channel_id"):
-        await ctx.send("❌ Форум не настроен! Сначала настройте форум командой `!setupforum`")
-        return
-      
-      forum_channel = ctx.guild.get_channel(config.get("forum_channel_id"))
-      if not forum_channel:
-        await ctx.send("❌ Настроенный форум не найден! Возможно, он был удален. Настройте форум заново.")
-        return
-      
-      embed = nextcord.Embed(
-        title=embed_name,
-        description=embed_description + "\n\n📝 **Эта форма автоматически создаст публикацию в форуме**",
-        color=nextcord.Color.from_rgb(43, 45, 49)
-      ).set_image(
-        url=
-        "https://media.discordapp.net/attachments/996382278311751730/1031880216320167966/Static-banner.jpg?width=954&height=318"
-      ).add_field(name="Our Instagram",
-                  value="https://www.instagram.com/static.sqd/",
-                  inline=False).add_field(
-                    name="Our Youtube",
-                    value="https://www.youtube.com/@staticsquad5058",
-                    inline=False)
 
-      await ctx.reply(f"✅ Форма отправлена в настроенный форум {forum_channel.mention}!")
-      await forum_channel.send(embed=embed, view=FormView(forum_channel))
-      
-    except Exception as e:
-      await ctx.send(f"❌ Ошибка: {str(e)}")
 
   # Force Leave Command
   @commands.command(name="forceleave",

@@ -381,31 +381,64 @@ class FormModal(nextcord.ui.Modal):
         in_progress_tag = None
         tag_name = "In Progress"  # Используем фиксированное название тега
         
+        print(f"=== ПОИСК ТЕГА ===")
         print(f"Ищем тег '{tag_name}' в форуме {forum_channel.name}")
         print(f"Доступные теги: {[tag.name for tag in forum_channel.available_tags]}")
+        print(f"Количество тегов: {len(forum_channel.available_tags)}")
+        
+        # Пробуем разные варианты названия тега
+        possible_tag_names = ["In Progress", "in progress", "In progress", "IN PROGRESS"]
         
         for tag in forum_channel.available_tags:
-          if tag.name.lower() == tag_name.lower():
+          print(f"Проверяем тег: '{tag.name}' (ID: {tag.id})")
+          if tag.name in possible_tag_names:
             in_progress_tag = tag
-            print(f"Найден тег: {tag.name} (ID: {tag.id})")
+            print(f"✅ Найден тег: {tag.name} (ID: {tag.id})")
             break
         
+        if not in_progress_tag:
+          print(f"❌ Тег '{tag_name}' не найден! Пробуем создать...")
+          try:
+            # Пытаемся создать тег если его нет
+            in_progress_tag = await forum_channel.create_tag(
+              name="In Progress",
+              emoji="🔄",
+              color=nextcord.Color.blue()
+            )
+            print(f"✅ Создан новый тег: {in_progress_tag.name} (ID: {in_progress_tag.id})")
+          except Exception as create_tag_error:
+            print(f"❌ Не удалось создать тег: {create_tag_error}")
+        
         # Создаем публикацию в форуме
+        print(f"=== СОЗДАНИЕ ПУБЛИКАЦИИ ===")
         thread = await forum_channel.create_thread(
           name=thread_title,
           content=content,
           auto_archive_duration=1440  # 24 часа
         )
+        print(f"✅ Публикация создана: {thread.name} (ID: {thread.id})")
         
         # Добавляем тег "In Progress" если найден
         if in_progress_tag:
+          print(f"=== ДОБАВЛЕНИЕ ТЕГА ===")
           try:
+            # Пробуем разные способы добавления тега
+            print(f"Пытаемся добавить тег {in_progress_tag.name} к публикации {thread.name}")
+            
+            # Способ 1: add_tags
             await thread.add_tags(in_progress_tag)
-            print(f"Тег {in_progress_tag.name} добавлен к публикации {thread.name}")
+            print(f"✅ Тег {in_progress_tag.name} добавлен через add_tags")
+            
           except Exception as tag_error:
-            print(f"Ошибка добавления тега: {tag_error}")
+            print(f"❌ Ошибка add_tags: {tag_error}")
+            try:
+              # Способ 2: edit с тегами
+              await thread.edit(tags=[in_progress_tag])
+              print(f"✅ Тег {in_progress_tag.name} добавлен через edit")
+            except Exception as edit_error:
+              print(f"❌ Ошибка edit: {edit_error}")
         else:
-          print(f"Тег '{tag_name}' не найден в форуме!")
+          print(f"❌ Тег не найден и не создан!")
         
         # Отправляем форму в публикацию
         try:
@@ -416,46 +449,12 @@ class FormModal(nextcord.ui.Modal):
           # Пытаемся отправить простой текст
           await thread.send("**Ошибка отображения формы, но заявка получена!**")
         
-        # Ищем роль "Applications" и выдаем её пользователю
-        applications_role = None
-        print(f"Ищем роль 'Applications' для пользователя {interaction.user.display_name}")
-        
-        # Сначала пробуем найти по ID из конфигурации
-        if hasattr(self, 'config') and self.config.get("applications_role_id"):
-          applications_role = interaction.guild.get_role(self.config.get("applications_role_id"))
-          print(f"Роль найдена по ID: {applications_role.name if applications_role else 'Не найдена'}")
-        
-        # Если не найдена по ID, ищем по имени
-        if not applications_role:
-          print("Ищем роль по имени 'Applications'...")
-          for role in interaction.guild.roles:
-            print(f"Проверяем роль: {role.name} (ID: {role.id})")
-            if role.name.lower() == "applications":
-              applications_role = role
-              print(f"Роль найдена по имени: {role.name} (ID: {role.id})")
-              break
-        
-        # Проверяем, есть ли у пользователя уже эта роль
-        if applications_role:
-          if applications_role in interaction.user.roles:
-            print(f"У пользователя уже есть роль {applications_role.name}")
-            role_message = f"\nℹ️ Роль {applications_role.mention} уже есть у пользователя"
-          else:
-            try:
-              print(f"Пытаемся выдать роль {applications_role.name} пользователю {interaction.user.display_name}")
-              await interaction.user.add_roles(applications_role)
-              role_message = f"\n✅ Роль {applications_role.mention} выдана!"
-              print(f"Роль {applications_role.name} успешно выдана!")
-            except Exception as e:
-              print(f"Ошибка выдачи роли: {e}")
-              role_message = f"\n❌ Не удалось выдать роль: {str(e)}"
-        else:
-          print("Роль 'Applications' не найдена!")
-          role_message = "\n❌ Роль 'Applications' не найдена на сервере"
+                 # Убираем логику с ролями - просто создаем публикацию
+        print("Публикация создана успешно!")
         
         # Отправляем подтверждение пользователю
         await interaction.response.send_message(
-          f"✅ Ваша заявка отправлена!\n\n📝 **Публикация**: {thread.name}\n🔗 **Ссылка**: {thread.mention}{role_message}", 
+          f"✅ Ваша заявка отправлена!\n\n📝 **Публикация**: {thread.name}\n🔗 **Ссылка**: {thread.jump_url}", 
           ephemeral=True
         )
         

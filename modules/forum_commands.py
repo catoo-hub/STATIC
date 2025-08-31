@@ -22,7 +22,6 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
             else:
                 self.config = {
                     "forum_channel_id": None,
-                    "applications_role_id": None,
                     "in_progress_tag_name": "In Progress",
                     "auto_create_threads": True
                 }
@@ -31,7 +30,6 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
             print(f"Ошибка загрузки конфигурации форума: {e}")
             self.config = {
                 "forum_channel_id": None,
-                "applications_role_id": None,
                 "in_progress_tag_name": "In Progress",
                 "auto_create_threads": True
             }
@@ -48,7 +46,7 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
     @commands.command(name="setupforum", description="Настроить форум для автоматических заявок")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def setup_forum(self, ctx: commands.Context, forum_channel, applications_role: nextcord.Role):
+    async def setup_forum(self, ctx: commands.Context, forum_channel):
         """Настраивает форум для автоматического создания публикаций с заявками"""
         try:
             # Пытаемся найти канал форума разными способами
@@ -84,7 +82,6 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
             
             # Сохраняем настройки
             self.config["forum_channel_id"] = found_channel.id
-            self.config["applications_role_id"] = applications_role.id
             self.save_config()
             
             embed = nextcord.Embed(
@@ -93,7 +90,6 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
                 color=nextcord.Color.green()
             )
             embed.add_field(name="Форум", value=found_channel.mention)
-            embed.add_field(name="Роль для заявок", value=applications_role.mention)
             embed.add_field(name="Тег по умолчанию", value=self.config["in_progress_tag_name"])
             
             await ctx.send(embed=embed)
@@ -102,43 +98,6 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
             error_embed = nextcord.Embed(
                 title="❌ Ошибка",
                 description=f"Не удалось настроить форум: {str(e)}",
-                color=nextcord.Color.red()
-            )
-            await ctx.send(embed=error_embed)
-    
-    @commands.command(name="forumstatus", description="Показать текущие настройки форума")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    async def forum_status(self, ctx: commands.Context):
-        """Показывает текущие настройки форума"""
-        try:
-            if not self.config["forum_channel_id"]:
-                await ctx.send("❌ Форум не настроен! Используйте команду `(%)setupforum`")
-                return
-            
-            forum_channel = ctx.guild.get_channel(self.config["forum_channel_id"])
-            applications_role = ctx.guild.get_role(self.config["applications_role_id"])
-            
-            if not forum_channel or not applications_role:
-                await ctx.send("❌ Найденные настройки устарели! Настройте форум заново.")
-                return
-            
-            embed = nextcord.Embed(
-                title="📋 Настройки форума",
-                description="Текущие настройки для автоматических заявок",
-                color=nextcord.Color.blue()
-            )
-            embed.add_field(name="Форум", value=forum_channel.mention)
-            embed.add_field(name="Роль для заявок", value=applications_role.mention)
-            embed.add_field(name="Тег по умолчанию", value=self.config["in_progress_tag_name"])
-            embed.add_field(name="Автосоздание публикаций", value="✅ Включено" if self.config["auto_create_threads"] else "❌ Отключено")
-            
-            await ctx.send(embed=embed)
-            
-        except Exception as e:
-            error_embed = nextcord.Embed(
-                title="❌ Ошибка",
-                description=f"Не удалось получить статус форума: {str(e)}",
                 color=nextcord.Color.red()
             )
             await ctx.send(embed=error_embed)
@@ -186,11 +145,10 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
             )
             await ctx.send(embed=error_embed)
     
-    @commands.command(name="testforum", description="Тестирование работы с форумом")
+    @commands.command(name="checktags", description="Проверить теги в форуме")
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    async def test_forum(self, ctx: commands.Context):
-        """Тестирует работу с форумом"""
+    async def check_tags(self, ctx: commands.Context):
+        """Проверяет теги в настроенном форуме"""
         try:
             if not self.config["forum_channel_id"]:
                 await ctx.send("❌ Форум не настроен! Используйте команду `!setupforum`")
@@ -206,67 +164,33 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
             for tag in forum_channel.available_tags:
                 tags_info.append(f"• {tag.name} (ID: {tag.id})")
             
-            # Проверяем роль
-            applications_role = None
-            if self.config.get("applications_role_id"):
-                applications_role = ctx.guild.get_role(self.config["applications_role_id"])
-            
             embed = nextcord.Embed(
-                title="🧪 Тест форума",
-                description=f"Тестирование настроек форума {forum_channel.mention}",
+                title="🏷️ Теги в форуме",
+                description=f"Проверка тегов в форуме {forum_channel.mention}",
                 color=nextcord.Color.blue()
             )
             embed.add_field(name="Форум", value=f"{forum_channel.name} (ID: {forum_channel.id})")
             embed.add_field(name="Доступные теги", value="\n".join(tags_info) if tags_info else "Нет тегов", inline=False)
-            embed.add_field(name="Роль для заявок", value=applications_role.mention if applications_role else "Не найдена")
+            embed.add_field(name="Количество тегов", value=str(len(forum_channel.available_tags)))
             
-            await ctx.send(embed=embed)
+            # Проверяем, есть ли тег "In Progress"
+            in_progress_tag = None
+            for tag in forum_channel.available_tags:
+                if tag.name.lower() == "in progress":
+                    in_progress_tag = tag
+                    break
             
-        except Exception as e:
-            error_embed = nextcord.Embed(
-                title="❌ Ошибка тестирования",
-                description=f"Не удалось протестировать форум: {str(e)}",
-                color=nextcord.Color.red()
-            )
-            await ctx.send(embed=error_embed)
-    
-    @commands.command(name="checkuser", description="Проверить роли пользователя")
-    @commands.guild_only()
-    async def check_user(self, ctx: commands.Context, user: nextcord.Member = None):
-        """Проверяет роли указанного пользователя или автора команды"""
-        try:
-            if not user:
-                user = ctx.author
-            
-            roles_info = []
-            for role in user.roles:
-                if role.name != "@everyone":
-                    roles_info.append(f"• {role.name} (ID: {role.id})")
-            
-            embed = nextcord.Embed(
-                title=f"👤 Роли пользователя {user.display_name}",
-                description=f"Пользователь: {user.mention}",
-                color=nextcord.Color.blue()
-            )
-            embed.add_field(name="Роли", value="\n".join(roles_info) if roles_info else "Нет ролей", inline=False)
-            
-            # Проверяем, есть ли роль Applications
-            applications_role = None
-            if self.config.get("applications_role_id"):
-                applications_role = ctx.guild.get_role(self.config["applications_role_id"])
-            
-            if applications_role:
-                if applications_role in user.roles:
-                    embed.add_field(name="Роль Applications", value=f"✅ {applications_role.mention} - уже есть", inline=False)
-                else:
-                    embed.add_field(name="Роль Applications", value=f"❌ {applications_role.mention} - отсутствует", inline=False)
+            if in_progress_tag:
+                embed.add_field(name="✅ Тег 'In Progress'", value=f"Найден: {in_progress_tag.name} (ID: {in_progress_tag.id})", inline=False)
+            else:
+                embed.add_field(name="❌ Тег 'In Progress'", value="Не найден! Нужно создать вручную", inline=False)
             
             await ctx.send(embed=embed)
             
         except Exception as e:
             error_embed = nextcord.Embed(
                 title="❌ Ошибка",
-                description=f"Не удалось проверить пользователя: {str(e)}",
+                description=f"Не удалось проверить теги: {str(e)}",
                 color=nextcord.Color.red()
             )
             await ctx.send(embed=error_embed)
