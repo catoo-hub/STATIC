@@ -229,6 +229,47 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
                 color=nextcord.Color.red()
             )
             await ctx.send(embed=error_embed)
+    
+    @commands.command(name="checkuser", description="Проверить роли пользователя")
+    @commands.guild_only()
+    async def check_user(self, ctx: commands.Context, user: nextcord.Member = None):
+        """Проверяет роли указанного пользователя или автора команды"""
+        try:
+            if not user:
+                user = ctx.author
+            
+            roles_info = []
+            for role in user.roles:
+                if role.name != "@everyone":
+                    roles_info.append(f"• {role.name} (ID: {role.id})")
+            
+            embed = nextcord.Embed(
+                title=f"👤 Роли пользователя {user.display_name}",
+                description=f"Пользователь: {user.mention}",
+                color=nextcord.Color.blue()
+            )
+            embed.add_field(name="Роли", value="\n".join(roles_info) if roles_info else "Нет ролей", inline=False)
+            
+            # Проверяем, есть ли роль Applications
+            applications_role = None
+            if self.config.get("applications_role_id"):
+                applications_role = ctx.guild.get_role(self.config["applications_role_id"])
+            
+            if applications_role:
+                if applications_role in user.roles:
+                    embed.add_field(name="Роль Applications", value=f"✅ {applications_role.mention} - уже есть", inline=False)
+                else:
+                    embed.add_field(name="Роль Applications", value=f"❌ {applications_role.mention} - отсутствует", inline=False)
+            
+            await ctx.send(embed=embed)
+            
+        except Exception as e:
+            error_embed = nextcord.Embed(
+                title="❌ Ошибка",
+                description=f"Не удалось проверить пользователя: {str(e)}",
+                color=nextcord.Color.red()
+            )
+            await ctx.send(embed=error_embed)
 
 def setup(bot: commands.Bot):
     bot.add_cog(ForumCommands(bot)) 

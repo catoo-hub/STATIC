@@ -420,30 +420,42 @@ class FormModal(nextcord.ui.Modal):
         applications_role = None
         print(f"Ищем роль 'Applications' для пользователя {interaction.user.display_name}")
         
+        # Сначала пробуем найти по ID из конфигурации
         if hasattr(self, 'config') and self.config.get("applications_role_id"):
           applications_role = interaction.guild.get_role(self.config.get("applications_role_id"))
           print(f"Роль найдена по ID: {applications_role.name if applications_role else 'Не найдена'}")
-        else:
-          # Fallback: ищем по имени
+        
+        # Если не найдена по ID, ищем по имени
+        if not applications_role:
+          print("Ищем роль по имени 'Applications'...")
           for role in interaction.guild.roles:
+            print(f"Проверяем роль: {role.name} (ID: {role.id})")
             if role.name.lower() == "applications":
               applications_role = role
-              print(f"Роль найдена по имени: {role.name}")
+              print(f"Роль найдена по имени: {role.name} (ID: {role.id})")
               break
         
-        if applications_role and applications_role not in interaction.user.roles:
-          try:
-            await interaction.user.add_roles(applications_role)
-            role_message = f"\n✅ Роль {applications_role.mention} выдана!"
-          except Exception as e:
-            print(f"Ошибка выдачи роли: {e}")
-            role_message = "\n❌ Не удалось выдать роль"
+        # Проверяем, есть ли у пользователя уже эта роль
+        if applications_role:
+          if applications_role in interaction.user.roles:
+            print(f"У пользователя уже есть роль {applications_role.name}")
+            role_message = f"\nℹ️ Роль {applications_role.mention} уже есть у пользователя"
+          else:
+            try:
+              print(f"Пытаемся выдать роль {applications_role.name} пользователю {interaction.user.display_name}")
+              await interaction.user.add_roles(applications_role)
+              role_message = f"\n✅ Роль {applications_role.mention} выдана!"
+              print(f"Роль {applications_role.name} успешно выдана!")
+            except Exception as e:
+              print(f"Ошибка выдачи роли: {e}")
+              role_message = f"\n❌ Не удалось выдать роль: {str(e)}"
         else:
-          role_message = ""
+          print("Роль 'Applications' не найдена!")
+          role_message = "\n❌ Роль 'Applications' не найдена на сервере"
         
         # Отправляем подтверждение пользователю
         await interaction.response.send_message(
-          f"✅ Ваша заявка отправлена! Создана публикация: {thread.mention}{role_message}", 
+          f"✅ Ваша заявка отправлена!\n\n📝 **Публикация**: {thread.name}\n🔗 **Ссылка**: {thread.mention}{role_message}", 
           ephemeral=True
         )
         
