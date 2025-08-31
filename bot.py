@@ -415,7 +415,7 @@ class FormModal(nextcord.ui.Modal):
           name=thread_title,
           content=content,
           auto_archive_duration=1440, # 24 часа
-          applied_tags=[in_progress_tag, '1411645176467947521']
+          # applied_tags=[in_progress_tag, '1411645176467947521']
         )
         print(f"✅ Публикация создана: {thread.name} (ID: {thread.id})")
         
@@ -440,6 +440,13 @@ class FormModal(nextcord.ui.Modal):
         #       print(f"❌ Ошибка edit: {edit_error}")
         # else:
         #   print(f"❌ Тег не найден и не создан!")
+
+        try:
+          # Способ 2: edit с тегами
+          await thread.edit(applied_tags=[in_progress_tag])
+          print(f"✅ Тег {in_progress_tag.name} добавлен через edit")
+        except Exception as edit_error:
+          print(f"❌ Ошибка edit: {edit_error}")
         
         # Отправляем форму в публикацию
         try:
@@ -466,9 +473,9 @@ class FormModal(nextcord.ui.Modal):
         print(f"Ошибка создания публикации: {e}")
 
     # # Обычная отправка формы (если не форум или ошибка)
-    # await interaction.response.send_message(submit_message, ephemeral=True)
-    # submit_channel = await bot.fetch_channel(submit_channel_id)
-    # await submit_channel.send("<@&849351531060133888>, check this!", embed=embed)
+    await interaction.response.send_message(submit_message, ephemeral=True)
+    submit_channel = await bot.fetch_channel(submit_channel_id)
+    await submit_channel.send("<@&849351531060133888>, check this!", embed=embed)
 
 
 # Form View Class
