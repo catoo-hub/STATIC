@@ -414,31 +414,32 @@ class FormModal(nextcord.ui.Modal):
         thread = await forum_channel.create_thread(
           name=thread_title,
           content=content,
-          auto_archive_duration=1440  # 24 часа
+          auto_archive_duration=1440, # 24 часа
+          applied_tags=['1411645176467947521']
         )
         print(f"✅ Публикация создана: {thread.name} (ID: {thread.id})")
         
         # Добавляем тег "In Progress" если найден
-        if in_progress_tag:
-          print(f"=== ДОБАВЛЕНИЕ ТЕГА ===")
-          try:
-            # Пробуем разные способы добавления тега
-            print(f"Пытаемся добавить тег {in_progress_tag.name} к публикации {thread.name}")
+        # if in_progress_tag:
+        #   print(f"=== ДОБАВЛЕНИЕ ТЕГА ===")
+        #   try:
+        #     # Пробуем разные способы добавления тега
+        #     print(f"Пытаемся добавить тег {in_progress_tag.name} к публикации {thread.name}")
             
-            # Способ 1: add_tags
-            await thread.add_tags(in_progress_tag)
-            print(f"✅ Тег {in_progress_tag.name} добавлен через add_tags")
+        #     # Способ 1: add_tags
+        #     # await thread.edit(applied_tags=['1411645176467947521'])
+        #     print(f"✅ Тег {in_progress_tag.name} добавлен через add_tags")
             
-          except Exception as tag_error:
-            print(f"❌ Ошибка add_tags: {tag_error}")
-            try:
-              # Способ 2: edit с тегами
-              await thread.edit(tags=[in_progress_tag])
-              print(f"✅ Тег {in_progress_tag.name} добавлен через edit")
-            except Exception as edit_error:
-              print(f"❌ Ошибка edit: {edit_error}")
-        else:
-          print(f"❌ Тег не найден и не создан!")
+        #   except Exception as tag_error:
+        #     print(f"❌ Ошибка add_tags: {tag_error}")
+        #     try:
+        #       # Способ 2: edit с тегами
+        #       await thread.edit(tags=[in_progress_tag])
+        #       print(f"✅ Тег {in_progress_tag.name} добавлен через edit")
+        #     except Exception as edit_error:
+        #       print(f"❌ Ошибка edit: {edit_error}")
+        # else:
+        #   print(f"❌ Тег не найден и не создан!")
         
         # Отправляем форму в публикацию
         try:
