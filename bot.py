@@ -297,11 +297,27 @@ class ScriptsView(nextcord.ui.View):
 class FormModal(nextcord.ui.Modal):
 
   # Form Modal Constructor
-  def __init__(self):
+  def __init__(self, forum_channel=None):
     super().__init__(title=title, custom_id=app_custom_id, timeout=None)
+    self.forum_channel = forum_channel
+    
+    # Загружаем конфигурацию форума если не указан канал
+    if not self.forum_channel:
+      try:
+        import json
+        import os
+        config_file = "./config/forum_config.json"
+        if os.path.exists(config_file):
+          with open(config_file, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            if config.get("forum_channel_id"):
+              # Получаем канал форума из конфигурации
+              # Это будет сделано в callback
+              self.config = config
+      except:
+        pass
 
     # Form Modal Fields
-
     for i in range(0, len(questions)):
       if questions[i]["style"] == "input":
         self.field = nextcord.ui.TextInput(
@@ -315,9 +331,8 @@ class FormModal(nextcord.ui.Modal):
 
       self.add_item(self.field)
 
-  # Modal Callback <t:3145315556:f>
+  # Modal Callback
   async def callback(self, interaction: nextcord.Interaction) -> None:
-
     url_avatar = interaction.user.avatar
     url_banner = interaction.user.banner
 
@@ -339,7 +354,76 @@ class FormModal(nextcord.ui.Modal):
         value=answer.value if answer.value else question_not_answered_message,
         inline=False)
 
-    # Sending Form Embed
+    # Если указан форум или есть конфигурация, создаем публикацию
+    forum_channel = self.forum_channel
+    if not forum_channel and hasattr(self, 'config'):
+      forum_channel = interaction.guild.get_channel(self.config.get("forum_channel_id"))
+    
+    if forum_channel:
+      try:
+        # Создаем название публикации на основе имени пользователя
+        thread_title = interaction.user.display_name
+        
+        # Создаем содержимое для публикации
+        content = f"**New application from {interaction.user.mention}**\n\n<@&849351531060133888>, check this!"
+        
+        # Создаем публикацию в форуме
+        thread = await forum_channel.create_thread(
+          name=thread_title,
+          content=content,
+          auto_archive_duration=1440  # 24 часа
+        )
+        
+        # Ищем тег "In Progress" в форуме
+        in_progress_tag = None
+        tag_name = self.config.get("in_progress_tag_name", "In Progress") if hasattr(self, 'config') else "In Progress"
+        
+        for tag in forum_channel.available_tags:
+          if tag.name.lower() == tag_name.lower():
+            in_progress_tag = tag
+            break
+        
+        # Добавляем тег "In Progress" если найден
+        if in_progress_tag:
+          await thread.add_tags(in_progress_tag)
+        
+        # Отправляем форму в публикацию
+        await thread.send(embed=embed)
+        
+        # Ищем роль "Applications" и выдаем её пользователю
+        applications_role = None
+        if hasattr(self, 'config') and self.config.get("applications_role_id"):
+          applications_role = interaction.guild.get_role(self.config.get("applications_role_id"))
+        else:
+          # Fallback: ищем по имени
+          for role in interaction.guild.roles:
+            if role.name.lower() == "applications":
+              applications_role = role
+              break
+        
+        if applications_role and applications_role not in interaction.user.roles:
+          try:
+            await interaction.user.add_roles(applications_role)
+            role_message = f"\n✅ Роль {applications_role.mention} выдана!"
+          except Exception as e:
+            print(f"Ошибка выдачи роли: {e}")
+            role_message = "\n❌ Не удалось выдать роль"
+        else:
+          role_message = ""
+        
+        # Отправляем подтверждение пользователю
+        await interaction.response.send_message(
+          f"✅ Ваша заявка отправлена! Создана публикация: {thread.mention}{role_message}", 
+          ephemeral=True
+        )
+        
+        return
+        
+      except Exception as e:
+        # Если не удалось создать публикацию, отправляем в обычный канал
+        print(f"Ошибка создания публикации: {e}")
+
+    # Обычная отправка формы (если не форум или ошибка)
     await interaction.response.send_message(submit_message, ephemeral=True)
     submit_channel = await bot.fetch_channel(submit_channel_id)
     await submit_channel.send("<@&849351531060133888>, check this!", embed=embed)
@@ -349,8 +433,9 @@ class FormModal(nextcord.ui.Modal):
 class FormView(nextcord.ui.View):
 
   # Form View Constructor
-  def __init__(self):
+  def __init__(self, forum_channel=None):
     super().__init__(timeout=None)
+    self.forum_channel = forum_channel
 
   # Form View Button Callback
   @nextcord.ui.button(label=button_name,
@@ -359,7 +444,7 @@ class FormView(nextcord.ui.View):
                       custom_id="forms:button")
   async def button_callback(self, button: nextcord.ui.Button,
                             interaction: nextcord.Interaction):
-    await interaction.response.send_modal(FormModal())
+    await interaction.response.send_modal(FormModal(self.forum_channel))
 
 
 # Bot Subclass

@@ -1,5 +1,6 @@
 import nextcord, asyncio
 from nextcord.ext import commands
+from nextcord import ForumChannel
 from bot import FormView, PluginsView, ScriptsView
 
 from utils.config import *
@@ -212,6 +213,32 @@ class Configuration(commands.Cog, name="Bot Configuration Command"):
 
     await ctx.reply(sent_button_to_channel_message)
     await channel.send(embed=embed, view=FormView())
+  
+  # Send Form to Forum Command
+  @commands.command(name="sendforumform",
+                    description="Отправить форму в форум для автоматических заявок")
+  @commands.has_permissions(administrator=True)
+  async def send_forum_form(self,
+                           ctx: commands.Context,
+                           forum_channel: nextcord.ForumChannel):
+    """Отправляет форму в форум, которая будет автоматически создавать публикации"""
+    
+    embed = nextcord.Embed(
+      title=embed_name,
+      description=embed_description,
+      color=nextcord.Color.from_rgb(43, 45, 49)
+    ).set_image(
+      url=
+      "https://media.discordapp.net/attachments/996382278311751730/1031880216320167966/Static-banner.jpg?width=954&height=318"
+    ).add_field(name="Our Instagram",
+                value="https://www.instagram.com/static.sqd/",
+                inline=False).add_field(
+                  name="Our Youtube",
+                  value="https://www.youtube.com/@staticsquad5058",
+                  inline=False)
+
+    await ctx.reply(f"✅ Форма отправлена в форум {forum_channel.mention}!")
+    await forum_channel.send(embed=embed, view=FormView(forum_channel))
 
   # Force Leave Command
   @commands.command(name="forceleave",
