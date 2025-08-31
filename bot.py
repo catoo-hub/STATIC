@@ -365,7 +365,7 @@ class FormModal(nextcord.ui.Modal):
         thread_title = interaction.user.display_name
         
         # Создаем содержимое для публикации
-        content = f"**New application from {interaction.user.mention}**\n\n<@&849351531060133888>, check this!"
+        content = f"**New application from {interaction.user.mention}**\n\n<@&1411648650244784259>, check this!"
         
         # Создаем публикацию в форуме
         thread = await forum_channel.create_thread(
