@@ -333,6 +333,11 @@ class FormModal(nextcord.ui.Modal):
 
   # Modal Callback
   async def callback(self, interaction: nextcord.Interaction) -> None:
+    print(f"=== ОБРАБОТКА ФОРМЫ ===")
+    print(f"Пользователь: {interaction.user.display_name}")
+    print(f"Форум канал: {self.forum_channel}")
+    print(f"Есть конфигурация: {hasattr(self, 'config')}")
+    
     url_avatar = interaction.user.avatar
     url_banner = interaction.user.banner
 
@@ -356,8 +361,13 @@ class FormModal(nextcord.ui.Modal):
 
     # Если указан форум или есть конфигурация, создаем публикацию
     forum_channel = self.forum_channel
+    print(f"Прямой форум канал: {forum_channel}")
+    
     if not forum_channel and hasattr(self, 'config'):
       forum_channel = interaction.guild.get_channel(self.config.get("forum_channel_id"))
+      print(f"Форум канал из конфигурации: {forum_channel}")
+    
+    print(f"Итоговый форум канал: {forum_channel}")
     
     if forum_channel:
       try:
@@ -365,7 +375,20 @@ class FormModal(nextcord.ui.Modal):
         thread_title = interaction.user.display_name
         
         # Создаем содержимое для публикации
-        content = f"**New application from {interaction.user.mention}**\n\n<@&1411648650244784259>, check this!"
+        content = f"**New application from {interaction.user.mention}**\n\n<@&848441067888312340>, check this!"
+        
+        # Сначала ищем тег "In Progress" в форуме
+        in_progress_tag = None
+        tag_name = "In Progress"  # Используем фиксированное название тега
+        
+        print(f"Ищем тег '{tag_name}' в форуме {forum_channel.name}")
+        print(f"Доступные теги: {[tag.name for tag in forum_channel.available_tags]}")
+        
+        for tag in forum_channel.available_tags:
+          if tag.name.lower() == tag_name.lower():
+            in_progress_tag = tag
+            print(f"Найден тег: {tag.name} (ID: {tag.id})")
+            break
         
         # Создаем публикацию в форуме
         thread = await forum_channel.create_thread(
@@ -374,31 +397,38 @@ class FormModal(nextcord.ui.Modal):
           auto_archive_duration=1440  # 24 часа
         )
         
-        # Ищем тег "In Progress" в форуме
-        in_progress_tag = None
-        tag_name = self.config.get("in_progress_tag_name", "In Progress") if hasattr(self, 'config') else "In Progress"
-        
-        for tag in forum_channel.available_tags:
-          if tag.name.lower() == tag_name.lower():
-            in_progress_tag = tag
-            break
-        
         # Добавляем тег "In Progress" если найден
         if in_progress_tag:
-          await thread.add_tags(in_progress_tag)
+          try:
+            await thread.add_tags(in_progress_tag)
+            print(f"Тег {in_progress_tag.name} добавлен к публикации {thread.name}")
+          except Exception as tag_error:
+            print(f"Ошибка добавления тега: {tag_error}")
+        else:
+          print(f"Тег '{tag_name}' не найден в форуме!")
         
         # Отправляем форму в публикацию
-        await thread.send(embed=embed)
+        try:
+          await thread.send(embed=embed)
+          print(f"Форма отправлена в публикацию {thread.name}")
+        except Exception as embed_error:
+          print(f"Ошибка отправки формы: {embed_error}")
+          # Пытаемся отправить простой текст
+          await thread.send("**Ошибка отображения формы, но заявка получена!**")
         
         # Ищем роль "Applications" и выдаем её пользователю
         applications_role = None
+        print(f"Ищем роль 'Applications' для пользователя {interaction.user.display_name}")
+        
         if hasattr(self, 'config') and self.config.get("applications_role_id"):
           applications_role = interaction.guild.get_role(self.config.get("applications_role_id"))
+          print(f"Роль найдена по ID: {applications_role.name if applications_role else 'Не найдена'}")
         else:
           # Fallback: ищем по имени
           for role in interaction.guild.roles:
             if role.name.lower() == "applications":
               applications_role = role
+              print(f"Роль найдена по имени: {role.name}")
               break
         
         if applications_role and applications_role not in interaction.user.roles:

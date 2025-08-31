@@ -185,6 +185,50 @@ class ForumCommands(commands.Cog, name="Forum Commands"):
                 color=nextcord.Color.red()
             )
             await ctx.send(embed=error_embed)
+    
+    @commands.command(name="testforum", description="Тестирование работы с форумом")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def test_forum(self, ctx: commands.Context):
+        """Тестирует работу с форумом"""
+        try:
+            if not self.config["forum_channel_id"]:
+                await ctx.send("❌ Форум не настроен! Используйте команду `!setupforum`")
+                return
+            
+            forum_channel = ctx.guild.get_channel(self.config["forum_channel_id"])
+            if not forum_channel:
+                await ctx.send("❌ Найденный форум не существует!")
+                return
+            
+            # Проверяем доступные теги
+            tags_info = []
+            for tag in forum_channel.available_tags:
+                tags_info.append(f"• {tag.name} (ID: {tag.id})")
+            
+            # Проверяем роль
+            applications_role = None
+            if self.config.get("applications_role_id"):
+                applications_role = ctx.guild.get_role(self.config["applications_role_id"])
+            
+            embed = nextcord.Embed(
+                title="🧪 Тест форума",
+                description=f"Тестирование настроек форума {forum_channel.mention}",
+                color=nextcord.Color.blue()
+            )
+            embed.add_field(name="Форум", value=f"{forum_channel.name} (ID: {forum_channel.id})")
+            embed.add_field(name="Доступные теги", value="\n".join(tags_info) if tags_info else "Нет тегов", inline=False)
+            embed.add_field(name="Роль для заявок", value=applications_role.mention if applications_role else "Не найдена")
+            
+            await ctx.send(embed=embed)
+            
+        except Exception as e:
+            error_embed = nextcord.Embed(
+                title="❌ Ошибка тестирования",
+                description=f"Не удалось протестировать форум: {str(e)}",
+                color=nextcord.Color.red()
+            )
+            await ctx.send(embed=error_embed)
 
 def setup(bot: commands.Bot):
     bot.add_cog(ForumCommands(bot)) 

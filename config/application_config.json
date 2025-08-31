@@ -2,7 +2,7 @@
   "app_title": "Application",
   "app_custom_id": "test_custom:id",
   "button_name": "APPLY NOW",
-  "embed_name": "STATIC STUDIO Applications",
+  "embed_name": "STATIC Applications",
   "embed_colour": "43,45,49",
   "embed_description": "**INFORMATION** \n➤**ACCEPT**\nYou have been accepted into our team\n\n➤**TRIAL**\nYou are almost at the level of our team, we will give you a month to raise your level\n\n➤**REAPP**\nYour work is not at the team level, you need to work on some aspects\n\n➤**DECLINE**\nYour work does not suit our team at all in terms of level, improve everything\n\n",
   "submit_channel_id": 848477659049492481,
@@ -22,22 +22,6 @@
       "style": "input",
       "input_style": "short",
       "custom_id": "custom_id_short"
-    },
-    {
-      "question": "Link to your one commission.",
-      "placeholder": "Instagram, GoogleDrive, Mega",
-      "required": false,
-      "style": "input",
-      "input_style": "short",
-      "custom_id": "custom_id_short2"
-    },
-    {
-      "question": "What exp. do you have in commissions?",
-      "placeholder": "ex. Like 3-4 orders on #%@!*",
-      "required": false,
-      "style": "input",
-      "input_style": "short",
-      "custom_id": "custom_id_short3"
     }
   ]
 }
