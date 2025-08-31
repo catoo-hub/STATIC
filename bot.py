@@ -396,18 +396,18 @@ class FormModal(nextcord.ui.Modal):
             print(f"✅ Найден тег: {tag.name} (ID: {tag.id})")
             break
         
-        if not in_progress_tag:
-          print(f"❌ Тег '{tag_name}' не найден! Пробуем создать...")
-          try:
-            # Пытаемся создать тег если его нет
-            in_progress_tag = await forum_channel.create_tag(
-              name="In Progress",
-              emoji="🔄",
-              color=nextcord.Color.blue()
-            )
-            print(f"✅ Создан новый тег: {in_progress_tag.name} (ID: {in_progress_tag.id})")
-          except Exception as create_tag_error:
-            print(f"❌ Не удалось создать тег: {create_tag_error}")
+        # if not in_progress_tag:
+        #   print(f"❌ Тег '{tag_name}' не найден! Пробуем создать...")
+        #   try:
+        #     # Пытаемся создать тег если его нет
+        #     in_progress_tag = await forum_channel.create_tag(
+        #       name="In Progress",
+        #       emoji="🔄",
+        #       color=nextcord.Color.blue()
+        #     )
+        #     print(f"✅ Создан новый тег: {in_progress_tag.name} (ID: {in_progress_tag.id})")
+        #   except Exception as create_tag_error:
+        #     print(f"❌ Не удалось создать тег: {create_tag_error}")
         
         # Создаем публикацию в форуме
         print(f"=== СОЗДАНИЕ ПУБЛИКАЦИИ ===")
@@ -415,7 +415,7 @@ class FormModal(nextcord.ui.Modal):
           name=thread_title,
           content=content,
           auto_archive_duration=1440, # 24 часа
-          applied_tags=['1411645176467947521']
+          applied_tags=[in_progress_tag, '1411645176467947521']
         )
         print(f"✅ Публикация создана: {thread.name} (ID: {thread.id})")
         
@@ -434,7 +434,7 @@ class FormModal(nextcord.ui.Modal):
         #     print(f"❌ Ошибка add_tags: {tag_error}")
         #     try:
         #       # Способ 2: edit с тегами
-        #       await thread.edit(tags=[in_progress_tag])
+        #       await thread.edit(applied_tags=[in_progress_tag])
         #       print(f"✅ Тег {in_progress_tag.name} добавлен через edit")
         #     except Exception as edit_error:
         #       print(f"❌ Ошибка edit: {edit_error}")
@@ -465,10 +465,10 @@ class FormModal(nextcord.ui.Modal):
         # Если не удалось создать публикацию, отправляем в обычный канал
         print(f"Ошибка создания публикации: {e}")
 
-    # Обычная отправка формы (если не форум или ошибка)
-    await interaction.response.send_message(submit_message, ephemeral=True)
-    submit_channel = await bot.fetch_channel(submit_channel_id)
-    await submit_channel.send("<@&849351531060133888>, check this!", embed=embed)
+    # # Обычная отправка формы (если не форум или ошибка)
+    # await interaction.response.send_message(submit_message, ephemeral=True)
+    # submit_channel = await bot.fetch_channel(submit_channel_id)
+    # await submit_channel.send("<@&849351531060133888>, check this!", embed=embed)
 
 
 # Form View Class
